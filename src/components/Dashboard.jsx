@@ -27,7 +27,7 @@ export const Dashboard = () => {
 
   const getAllData = async () => {
     setIsLoading(true);
-    let { data } = await axios.get("http://localhost/kartik.php?page=1");
+    let { data } = await axios.get("http://localhost/ignouplus-admin/kartik.php?page=1");
     console.log("res:", data.data);
     setIsLoading(false);
     setUserArr(data.data);
@@ -38,7 +38,7 @@ export const Dashboard = () => {
     const data = userArr[index];
     setIsLoading(true);
     axios
-      .post("http://localhost/kartik.php/", JSON.stringify(data))
+      .post("http://localhost/ignouplus-admin/kartik.php/", JSON.stringify(data))
       .then((res) => {
         if (res.status === 200) {
           setTimeout(() => {
@@ -67,7 +67,7 @@ export const Dashboard = () => {
     // Filter userArr based on the searchQuery
     // Assuming user_number is the field to be searched
     axios
-      .post("http://localhost/kartik.php/", {
+      .post("http://localhost/ignouplus-admin/kartik.php/", {
         action: "search",
       })
       .then((response) => {

@@ -10,7 +10,7 @@ const usePagination = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost/kartik.php?page=${currentPage}`
+          `http://localhost/ignouplus-admin/kartik.php?page=${currentPage}`
         );
         setData(response.data.data);
         setTotalPages(response.data.totalPages);
