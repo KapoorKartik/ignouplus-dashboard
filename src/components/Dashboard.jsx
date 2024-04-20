@@ -66,6 +66,16 @@ export const Dashboard = () => {
   const handleSearch = () => {
     // Filter userArr based on the searchQuery
     // Assuming user_number is the field to be searched
+    axios
+      .post("http://localhost/kartik.php/", {
+        action: "search",
+      })
+      .then((response) => {
+        console.log("res:", response);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
     const filteredUsers = userArr.filter((user) =>
       user.user_number.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -80,7 +90,7 @@ export const Dashboard = () => {
     // let pageNumber = e.target.value;
     let jumpTo = Math.min(Math.max(pageNumber, 1), totalPages);
     console.log("jumpTo:", jumpTo);
-    jumpToPage(jumpTo)
+    jumpToPage(jumpTo);
   };
   return (
     <>
@@ -248,42 +258,6 @@ export const Dashboard = () => {
           </button>
         </div>
       </div>
-      {/* <div className="container border">
-        <nav aria-label="Page navigation example">
-          <ul className="pagination">
-            <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-              <a className="page-link" href="#" onClick={prevPage}>
-                Previous
-              </a>
-            </li>
-            {[...Array(totalPages).keys()].map((page) => (
-              <li
-                key={page}
-                className={`page-item ${
-                  currentPage === page + 1 ? "active" : ""
-                }`}
-              >
-                <a
-                  className="page-link"
-                  href="#"
-                  onClick={() => setCurrentPage(page + 1)}
-                >
-                  {page + 1}
-                </a>
-              </li>
-            ))}
-            <li
-              className={`page-item ${
-                currentPage === totalPages ? "disabled" : ""
-              }`}
-            >
-              <a className="page-link" href="#" onClick={nextPage}>
-                Next
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </div> */}
     </>
   );
 };
