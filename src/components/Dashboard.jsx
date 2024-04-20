@@ -1,17 +1,36 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./Dashboard.css";
+import usePagination from "../customeHooks/usePagination";
 
 export const Dashboard = () => {
   const [userArr, setUserArr] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // State variable for search query
   const [isLoading, setIsLoading] = useState(true);
+  const [pageNumber, setPageNumber] = useState(1); // State to track the page number entered by the user
+
+  const {
+    dataFromHook,
+    currentPage,
+    totalPages,
+    nextPage,
+    prevPage,
+    jumpToPage,
+  } = usePagination();
+
+  useEffect(() => {
+    //  setIsLoading(false);
+    console.log("changed");
+    console.log("dataFromHook:", dataFromHook);
+    setUserArr(dataFromHook);
+  }, [dataFromHook]);
+
   const getAllData = async () => {
     setIsLoading(true);
-    let res = await axios.get("http://localhost/kartik.php/");
-    console.log("res:", res.data[0]);
+    let { data } = await axios.get("http://localhost/kartik.php?page=1");
+    console.log("res:", data.data);
     setIsLoading(false);
-    setUserArr(res.data);
+    setUserArr(data.data);
   };
 
   const postData = (index) => {
@@ -22,12 +41,11 @@ export const Dashboard = () => {
       .post("http://localhost/kartik.php/", JSON.stringify(data))
       .then((res) => {
         if (res.status === 200) {
-            setTimeout(() => {
-                
-                setIsLoading(false);
-            }, 20000);
-            // no need for this timeout in real application
-            // just for testing the loader only
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 2000);
+          // no need for this timeout in real application
+          // just for testing the loader only
         }
         console.log(res);
       });
@@ -54,6 +72,16 @@ export const Dashboard = () => {
     setUserArr(filteredUsers);
   };
 
+  const handlePageChange = (e) => {
+    console.log("e:", e.target);
+    e.preventDefault();
+    // Update the current page to the value entered by the user
+    // Ensure the page number is within valid range (between 1 and totalPages)
+    // let pageNumber = e.target.value;
+    let jumpTo = Math.min(Math.max(pageNumber, 1), totalPages);
+    console.log("jumpTo:", jumpTo);
+    jumpToPage(jumpTo)
+  };
   return (
     <>
       {/* {isLoading ? (
@@ -188,7 +216,74 @@ export const Dashboard = () => {
             })}
           </tbody>
         </table>
+
+        <div className="container border">
+          <form onSubmit={handlePageChange}>
+            <input
+              type="number"
+              value={pageNumber}
+              onChange={(e) => setPageNumber(parseInt(e.target.value))}
+              min={1}
+              max={totalPages}
+            />
+            {/* <button className="info">Go</button> */}
+            <button
+              type="button"
+              class="btn btn-dark"
+              onClick={(e) => handlePageChange(e)}
+            >
+              Go
+            </button>
+          </form>
+
+          {/* Pagination controls */}
+          <button onClick={prevPage} disabled={currentPage === 1}>
+            Previous
+          </button>
+          <span>
+            {currentPage} of {totalPages}
+          </span>
+          <button onClick={nextPage} disabled={currentPage === totalPages}>
+            Next
+          </button>
+        </div>
       </div>
+      {/* <div className="container border">
+        <nav aria-label="Page navigation example">
+          <ul className="pagination">
+            <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+              <a className="page-link" href="#" onClick={prevPage}>
+                Previous
+              </a>
+            </li>
+            {[...Array(totalPages).keys()].map((page) => (
+              <li
+                key={page}
+                className={`page-item ${
+                  currentPage === page + 1 ? "active" : ""
+                }`}
+              >
+                <a
+                  className="page-link"
+                  href="#"
+                  onClick={() => setCurrentPage(page + 1)}
+                >
+                  {page + 1}
+                </a>
+              </li>
+            ))}
+            <li
+              className={`page-item ${
+                currentPage === totalPages ? "disabled" : ""
+              }`}
+            >
+              <a className="page-link" href="#" onClick={nextPage}>
+                Next
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div> */}
     </>
   );
 };
