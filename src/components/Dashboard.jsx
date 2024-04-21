@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./Dashboard.css";
 import usePagination from "../customeHooks/usePagination";
+import { url } from "../constant";
 // import { Link } from "react-router-dom";
 
 export const Dashboard = () => {
@@ -18,6 +19,7 @@ export const Dashboard = () => {
     prevPage,
     jumpToPage,
     changeTotalPages,
+    fetchData,
   } = usePagination();
 
   useEffect(() => {
@@ -25,30 +27,39 @@ export const Dashboard = () => {
     setUserArr(dataFromHook);
   }, [dataFromHook]);
 
-  const getAllData = async () => {
+  
+
+  const getAllData =  () => {
     setIsLoading(true);
-    let { data } = await axios.get(
-      "http://localhost/ignouplus-admin/kartik.php?page=1"
-    );
-    // console.log("res:", data.data);
+    fetchData();
     setIsLoading(false);
-    setUserArr(data.data);
   };
+
+  const handleLoading = (fxn) => {
+    setIsLoading(true)
+    setTimeout(() => {
+        fxn();
+        setIsLoading(false);
+    }, 200);
+    // no need of this timeout jsut for testing
+  
+  };
+
 
   const postData = (index) => {
     // console.log("index:", userArr[index]);
     const data = {
       ...userArr[index],
-      action: "updateDataBymobileNumber",
+      action: "updateDataByMobileNumber",
     };
     setIsLoading(true);
     axios
-      .post("http://localhost/ignouplus-admin/kartik.php/", data)
+      .post(url, data)
       .then((res) => {
         if (res.status === 200) {
-          setTimeout(() => {
+          // setTimeout(() => {
             setIsLoading(false);
-          }, 1000);
+          // }, 1000);
           // no need for this timeout in real application
           // just for testing the loader only
         }
@@ -84,18 +95,28 @@ export const Dashboard = () => {
     console.log("mobileNumber", mobileNumber.length);
     if (mobileNumber.length !== 10) return;
     let postData = { mobileNumber, action: "searchByMobileNumber" };
+    setIsLoading(true);
     axios
-      .post("http://localhost/ignouplus-admin/kartik.php/", postData)
+      .post(url, postData)
       .then((response) => {
         console.log("res:", response.data.data);
         changeTotalPages(1);
         setUserArr(response.data.data);
+        setIsLoading(false);
       })
       .catch((error) => {
         console.error(error);
+        setIsLoading(false);
       });
   };
 
+  const handleReset = () =>{
+    // setPageNumber(1);
+    setmobileNumber("");
+    fetchData();
+    // getAllData();
+    
+  }
   const handleWhatsappOpen = (mob) => {
     const message = "Hello, this is a predefined message."; // Replace with your predefined message
     const url = `https://wa.me/${7018096573}?text=${encodeURIComponent(
@@ -114,6 +135,21 @@ export const Dashboard = () => {
     console.log("jumpTo:", jumpTo);
     jumpToPage(jumpTo);
   };
+
+  const handleBg = (selectedValue) => {
+    switch (selectedValue) {
+      case "0":
+        return "#C5EBAA"; // Not Approach
+      case "1":
+        return "#8DECB4"; // Successful
+      case "2":
+        return "#F2A8A8"; // User Denied
+      case "3":
+        return "#D1BB9E"; // Waiting
+      default:
+        return "#FFFFFF"; // Default background color
+    }
+  };
   return (
     <>
       {/* {isLoading ? (
@@ -121,7 +157,7 @@ export const Dashboard = () => {
           <span class="visually-hidden">Loading...</span>
         </div>
       ) : null} */}
-      <div className="container border">
+      <div className="border w-98">
         {isLoading && (
           <div className="spinner-overlay">
             <div className="spinner-border text-light" role="status">
@@ -130,10 +166,10 @@ export const Dashboard = () => {
           </div>
         )}
         <h2>Success App Dashboard</h2>
-        <div className="w-20 d-flex">
+        <div className="w-20 d-flex justify-content-start">
           <input
             type="text"
-            class="form-control me-2"
+            class="form-control me-2 ms-2"
             placeholder="9876543210"
             value={mobileNumber}
             onChange={(e) => handleNumberChange(e.target.value)}
@@ -141,9 +177,16 @@ export const Dashboard = () => {
           <button
             type="button"
             className="btn btn-primary"
-            onClick={handleSearch}
+            onClick={() => handleLoading(handleSearch)}
           >
             Search
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary ms-2"
+            onClick={() => handleLoading(handleReset)}
+          >
+            Reset
           </button>
         </div>
         <table className="table table-striped">
@@ -155,7 +198,7 @@ export const Dashboard = () => {
               <th>Regional Center</th>
               <th>Course</th>
               <th>Semester</th>
-              <th>assigment</th>
+              <th>Assigment</th>
               <th>Books</th>
               <th>Previous Ques</th>
               <th>Remarks</th>
@@ -173,13 +216,12 @@ export const Dashboard = () => {
 
                     <a
                       href="#"
-                      class="link-secondary"
+                      class="link-secondary ms-2"
                       onClick={(user) => handleWhatsappOpen(user?.user_number)}
                     >
                       <img
                         src="public/whatspp.svg"
                         alt="whatsapp"
-                        srcset=""
                         width={"25px"}
                       />
                     </a>
@@ -207,16 +249,15 @@ export const Dashboard = () => {
                   <td>
                     {/* Dropdown */}
                     <select
-                      className="form-select m-2"
+                      className="form-select"
                       onChange={(e) => handleChange(i, e.target.value, "books")}
-                      value={user.books || "No"}
-                      style={{
-                        backgroundColor:
-                          user.books === "Yes" ? "#C5EBAA" : "#FFFAB7",
-                      }}
+                      value={user.books}
+                      style={{ backgroundColor: handleBg(user.books) }}
                     >
-                      <option value="Yes">Yes</option>
-                      <option value="No">No</option>
+                      <option value="0">Not Approach</option>
+                      <option value="1">Successful</option>
+                      <option value="2">User Denied</option>
+                      <option value="3">Waiting</option>
                     </select>
                   </td>
                   <td>
@@ -268,35 +309,49 @@ export const Dashboard = () => {
           </tbody>
         </table>
 
-        <div className="container border">
-          <form onSubmit={handlePageChange}>
-            <input
-              type="number"
-              value={pageNumber}
-              onChange={(e) => setPageNumber(parseInt(e.target.value))}
-              min={1}
-              max={totalPages}
-            />
-            {/* <button className="info">Go</button> */}
-            <button
-              type="button"
-              class="btn btn-dark"
-              onClick={(e) => handlePageChange(e)}
-            >
-              Go
-            </button>
-          </form>
+        <div className="d-flex justify-content-center">
+          <div className="">
+            <form onSubmit={handlePageChange}>
+              <input
+                type="number"
+                value={pageNumber}
+                onChange={(e) => setPageNumber(parseInt(e.target.value))}
+                min={1}
+                max={totalPages}
+              />
+              {/* <button className="info">Go</button> */}
+              <button
+                type="button"
+                class="btn btn-dark mx-2"
+                onClick={(e) => handlePageChange(e)}
+              >
+                Go
+              </button>
+            </form>
 
-          {/* Pagination controls */}
-          <button onClick={prevPage} disabled={currentPage === 1}>
-            Previous
-          </button>
-          <span>
-            {currentPage} of {totalPages}
-          </span>
-          <button onClick={nextPage} disabled={currentPage === totalPages}>
-            Next
-          </button>
+            {/* Pagination controls */}
+            <div className="my-2">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => handleLoading(prevPage)}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              <span className="mx-2">
+                {currentPage} of {totalPages}
+              </span>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => handleLoading(nextPage)}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </>

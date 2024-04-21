@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { url } from "../constant";
 
 const usePagination = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -7,20 +8,21 @@ const usePagination = () => {
   const [dataFromHook, setData] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost/ignouplus-admin/kartik.php?page=${currentPage}`
-        );
-        setData(response.data.data);
-        setTotalPages(response.data.totalPages);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
+  
     fetchData();
   }, [currentPage]);
+  const fetchData = async () => {
+    try {
+      console.log("132");
+      const response = await axios.get(
+        `${url}?page=${currentPage}`
+      );
+      setData(response.data.data);
+      setTotalPages(response.data.totalPages);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
   const nextPage = () => {
     if (currentPage < totalPages) {
@@ -44,6 +46,7 @@ const usePagination = () => {
     setTotalPages(n);
   };
 
+
   return {
     dataFromHook,
     currentPage,
@@ -52,6 +55,7 @@ const usePagination = () => {
     prevPage,
     jumpToPage,
     changeTotalPages,
+    fetchData,
   };
 };
 
