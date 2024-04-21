@@ -2,10 +2,11 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./Dashboard.css";
 import usePagination from "../customeHooks/usePagination";
+// import { Link } from "react-router-dom";
 
 export const Dashboard = () => {
   const [userArr, setUserArr] = useState([]);
-  const [searchQuery, setSearchQuery] = useState(""); // State variable for search query
+  const [mobileNumber, setmobileNumber] = useState(""); // State variable for search query
   const [isLoading, setIsLoading] = useState(true);
   const [pageNumber, setPageNumber] = useState(1); // State to track the page number entered by the user
 
@@ -16,38 +17,42 @@ export const Dashboard = () => {
     nextPage,
     prevPage,
     jumpToPage,
+    changeTotalPages,
   } = usePagination();
 
   useEffect(() => {
     //  setIsLoading(false);
-    console.log("changed");
-    console.log("dataFromHook:", dataFromHook);
     setUserArr(dataFromHook);
   }, [dataFromHook]);
 
   const getAllData = async () => {
     setIsLoading(true);
-    let { data } = await axios.get("http://localhost/ignouplus-admin/kartik.php?page=1");
-    console.log("res:", data.data);
+    let { data } = await axios.get(
+      "http://localhost/ignouplus-admin/kartik.php?page=1"
+    );
+    // console.log("res:", data.data);
     setIsLoading(false);
     setUserArr(data.data);
   };
 
   const postData = (index) => {
-    console.log("index:", userArr[index]);
-    const data = userArr[index];
+    // console.log("index:", userArr[index]);
+    const data = {
+      ...userArr[index],
+      action: "updateDataBymobileNumber",
+    };
     setIsLoading(true);
     axios
-      .post("http://localhost/ignouplus-admin/kartik.php/", JSON.stringify(data))
+      .post("http://localhost/ignouplus-admin/kartik.php/", data)
       .then((res) => {
         if (res.status === 200) {
           setTimeout(() => {
             setIsLoading(false);
-          }, 2000);
+          }, 1000);
           // no need for this timeout in real application
           // just for testing the loader only
         }
-        console.log(res);
+        // console.log(res);
       });
   };
 
@@ -58,28 +63,45 @@ export const Dashboard = () => {
   const handleChange = (index, value, flag) => {
     // Update the value in userArr
     const updatedUserArr = [...userArr];
-    console.log("updatedUserArr:", updatedUserArr[index]);
+    // console.log("updatedUserArr:", updatedUserArr[index]);
     updatedUserArr[index][flag] = value;
     setUserArr(updatedUserArr);
   };
 
+  const handleNumberChange = (val) => {
+    console.log("val:", val);
+    if (val.length > 10) return;
+    let regex = /^\d*$/;
+    if (regex.test(val)) {
+      // If val is empty or contains only numbers, update the mobileNumber state
+      setmobileNumber(val);
+    }
+    // setmobileNumber(val);
+  };
   const handleSearch = () => {
-    // Filter userArr based on the searchQuery
+    // Filter userArr based on the mobileNumber
     // Assuming user_number is the field to be searched
+    console.log("mobileNumber", mobileNumber.length);
+    if (mobileNumber.length !== 10) return;
+    let postData = { mobileNumber, action: "searchByMobileNumber" };
     axios
-      .post("http://localhost/ignouplus-admin/kartik.php/", {
-        action: "search",
-      })
+      .post("http://localhost/ignouplus-admin/kartik.php/", postData)
       .then((response) => {
-        console.log("res:", response);
+        console.log("res:", response.data.data);
+        changeTotalPages(1);
+        setUserArr(response.data.data);
       })
       .catch((error) => {
         console.error(error);
       });
-    const filteredUsers = userArr.filter((user) =>
-      user.user_number.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setUserArr(filteredUsers);
+  };
+
+  const handleWhatsappOpen = (mob) => {
+    const message = "Hello, this is a predefined message."; // Replace with your predefined message
+    const url = `https://wa.me/${7018096573}?text=${encodeURIComponent(
+      message
+    )}`;
+    window.open(url);
   };
 
   const handlePageChange = (e) => {
@@ -108,15 +130,19 @@ export const Dashboard = () => {
           </div>
         )}
         <h2>Success App Dashboard</h2>
-        <div className="mb-3">
+        <div className="w-20 d-flex">
           <input
             type="text"
-            className="form-control"
-            placeholder="Search by mobile number"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            class="form-control me-2"
+            placeholder="9876543210"
+            value={mobileNumber}
+            onChange={(e) => handleNumberChange(e.target.value)}
           />
-          <button className="btn btn-primary" onClick={handleSearch}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleSearch}
+          >
             Search
           </button>
         </div>
@@ -142,7 +168,22 @@ export const Dashboard = () => {
                 <tr key={i} className="text-center">
                   <td>{i + 1}</td>
                   <td>{user.user_name}</td>
-                  <td>{user.user_number}</td>
+                  <td>
+                    {user.user_number}
+
+                    <a
+                      href="#"
+                      class="link-secondary"
+                      onClick={(user) => handleWhatsappOpen(user?.user_number)}
+                    >
+                      <img
+                        src="public/whatspp.svg"
+                        alt="whatsapp"
+                        srcset=""
+                        width={"25px"}
+                      />
+                    </a>
+                  </td>
                   <td>{user.user_regional_center}</td>
                   <td>{user.user_course}</td>
                   <td>{user.user_semester}</td>

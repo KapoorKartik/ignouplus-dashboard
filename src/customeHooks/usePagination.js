@@ -40,6 +40,10 @@ const usePagination = () => {
     }
   }
 
+  const changeTotalPages = (n) => {
+    setTotalPages(n);
+  };
+
   return {
     dataFromHook,
     currentPage,
@@ -47,6 +51,7 @@ const usePagination = () => {
     nextPage,
     prevPage,
     jumpToPage,
+    changeTotalPages,
   };
 };
 

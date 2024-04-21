@@ -27,3 +27,8 @@ tbody tr td {
     z-index: 9999;
     /* Ensure the spinner is above other content */
 }
+
+
+.w-20 {
+    width: 20%;
+}
