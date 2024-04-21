@@ -57,9 +57,9 @@ export const Dashboard = () => {
       .post(url, data)
       .then((res) => {
         if (res.status === 200) {
-          // setTimeout(() => {
+          setTimeout(() => {
             setIsLoading(false);
-          // }, 1000);
+          }, 200);
           // no need for this timeout in real application
           // just for testing the loader only
         }
