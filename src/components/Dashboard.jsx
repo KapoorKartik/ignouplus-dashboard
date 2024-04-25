@@ -220,7 +220,7 @@ export const Dashboard = () => {
                       onClick={(user) => handleWhatsappOpen(user?.user_number)}
                     >
                       <img
-                        src="public/whatspp.svg"
+                        src="/whatsapp.svg"
                         alt="whatsapp"
                         width={"25px"}
                       />
