@@ -13,7 +13,6 @@ const usePagination = () => {
   }, [currentPage]);
   const fetchData = async () => {
     try {
-      console.log("132");
       const response = await axios.get(
         `${url}?page=${currentPage}`
       );
@@ -56,6 +55,7 @@ const usePagination = () => {
     jumpToPage,
     changeTotalPages,
     fetchData,
+    setData,
   };
 };
 

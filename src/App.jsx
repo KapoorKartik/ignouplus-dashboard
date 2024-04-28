@@ -1,14 +1,14 @@
-import { useState } from 'react'
+import { useState } from "react";
 // import './App.css'
-import { Dashboard } from './components/Dashboard'
+import { Dashboard } from "./components/Dashboard";
+import FilterForm from "./components/Filter";
 
 function App() {
-
   return (
     <>
       <Dashboard />
     </>
-  )
+  );
 }
 
-export default App
+export default App;

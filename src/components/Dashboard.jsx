@@ -3,6 +3,7 @@ import axios from "axios";
 import "./Dashboard.css";
 import usePagination from "../customeHooks/usePagination";
 import { url } from "../constant";
+import FilterForm from "./Filter";
 // import { Link } from "react-router-dom";
 
 export const Dashboard = () => {
@@ -10,6 +11,7 @@ export const Dashboard = () => {
   const [mobileNumber, setmobileNumber] = useState(""); // State variable for search query
   const [isLoading, setIsLoading] = useState(true);
   const [pageNumber, setPageNumber] = useState(1); // State to track the page number entered by the user
+  const [filterData, setFilterData] = useState({});
 
   const {
     dataFromHook,
@@ -20,6 +22,7 @@ export const Dashboard = () => {
     jumpToPage,
     changeTotalPages,
     fetchData,
+    setData,
   } = usePagination();
 
   useEffect(() => {
@@ -27,24 +30,20 @@ export const Dashboard = () => {
     setUserArr(dataFromHook);
   }, [dataFromHook]);
 
-  
-
-  const getAllData =  () => {
+  const getAllData = () => {
     setIsLoading(true);
     fetchData();
     setIsLoading(false);
   };
 
   const handleLoading = (fxn) => {
-    setIsLoading(true)
+    setIsLoading(true);
     setTimeout(() => {
-        fxn();
-        setIsLoading(false);
+      fxn();
+      setIsLoading(false);
     }, 200);
     // no need of this timeout jsut for testing
-  
   };
-
 
   const postData = (index) => {
     // console.log("index:", userArr[index]);
@@ -53,18 +52,22 @@ export const Dashboard = () => {
       action: "updateDataByMobileNumber",
     };
     setIsLoading(true);
-    axios
-      .post(url, data)
-      .then((res) => {
-        if (res.status === 200) {
-          setTimeout(() => {
-            setIsLoading(false);
-          }, 200);
-          // no need for this timeout in real application
-          // just for testing the loader only
-        }
-        // console.log(res);
-      });
+    axios.post(url, data).then((res) => {
+      if (res.status === 200) {
+        const currentDate = new Date().toISOString().split("T")[0]; // Get current date in YYYY-MM-DD format
+        setTimeout(() => {
+          setIsLoading(false);
+          setUserArr((prevUserArr) => {
+            const updatedUserArr = [...prevUserArr];
+            updatedUserArr[index]["updated_at"] = currentDate;
+            return updatedUserArr;
+          });
+        }, 200);
+        // no need for this timeout in real application
+        // just for testing the loader only
+      }
+      // console.log(res);
+    });
   };
 
   useEffect(() => {
@@ -110,13 +113,12 @@ export const Dashboard = () => {
       });
   };
 
-  const handleReset = () =>{
+  const handleReset = () => {
     // setPageNumber(1);
     setmobileNumber("");
     fetchData();
     // getAllData();
-    
-  }
+  };
   const handleWhatsappOpen = (mob) => {
     const message = "Hello, this is a predefined message."; // Replace with your predefined message
     const url = `https://wa.me/${7018096573}?text=${encodeURIComponent(
@@ -147,16 +149,30 @@ export const Dashboard = () => {
       case "3":
         return "#D1BB9E"; // Waiting
       default:
-        return "#FFFFFF"; // Default background color
+        return "#C5EBAA"; // Default background color
     }
+  };
+
+  const removeTime = (dateTime) => {
+    const [date, time] = dateTime?.split(" ");
+    return date;
+  };
+
+  const onFilter = (data) => {
+    data = Object.fromEntries(
+      Object.entries(data).filter(([key, value]) => value !== "")
+    );
+    console.log("data on filter:", data);
+    setFilterData(data);
+    const postData = { ...data, action: "filterData" };
+    axios.post(`${url}`, JSON.stringify(postData)).then((res) => {
+      console.log("res on filter:", res.data);
+      setData(res.data.data);
+      changeTotalPages(res.data.totalPages);
+    });
   };
   return (
     <>
-      {/* {isLoading ? (
-        <div class="spinner-border spinner-overlay" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-      ) : null} */}
       <div className="border w-98">
         {isLoading && (
           <div className="spinner-overlay">
@@ -166,6 +182,7 @@ export const Dashboard = () => {
           </div>
         )}
         <h2>Success App Dashboard</h2>
+        <FilterForm onFilter={onFilter} />
         <div className="w-20 d-flex justify-content-start">
           <input
             type="text"
@@ -202,6 +219,7 @@ export const Dashboard = () => {
               <th>Books</th>
               <th>Previous Ques</th>
               <th>Remarks</th>
+              <th>Updated At</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -219,11 +237,7 @@ export const Dashboard = () => {
                       class="link-secondary ms-2"
                       onClick={(user) => handleWhatsappOpen(user?.user_number)}
                     >
-                      <img
-                        src="/whatsapp.svg"
-                        alt="whatsapp"
-                        width={"25px"}
-                      />
+                      <img src="/whatsapp.svg" alt="whatsapp" width={"25px"} />
                     </a>
                   </td>
                   <td>{user.user_regional_center}</td>
@@ -236,14 +250,15 @@ export const Dashboard = () => {
                       onChange={(e) =>
                         handleChange(i, e.target.value, "assigment")
                       }
-                      value={user.assigment || "No"}
+                      value={user.assigment}
                       style={{
-                        backgroundColor:
-                          user.assigment === "Yes" ? "#C5EBAA" : "#FFFAB7",
+                        backgroundColor: handleBg(user.assigment || "0"),
                       }}
                     >
-                      <option value="Yes">Yes</option>
-                      <option value="No">No</option>
+                      <option value="0">Not Approach</option>
+                      <option value="1">Successful</option>
+                      <option value="2">User Denied</option>
+                      <option value="3">Waiting</option>
                     </select>
                   </td>
                   <td>
@@ -252,7 +267,7 @@ export const Dashboard = () => {
                       className="form-select"
                       onChange={(e) => handleChange(i, e.target.value, "books")}
                       value={user.books}
-                      style={{ backgroundColor: handleBg(user.books) }}
+                      style={{ backgroundColor: handleBg(user.books || "0") }}
                     >
                       <option value="0">Not Approach</option>
                       <option value="1">Successful</option>
@@ -267,16 +282,17 @@ export const Dashboard = () => {
                       onChange={(e) =>
                         handleChange(i, e.target.value, "previous_question")
                       }
-                      value={user.previous_question || "No"}
+                      value={user.previous_question}
                       style={{
-                        backgroundColor:
-                          user.previous_question === "Yes"
-                            ? "#C5EBAA"
-                            : "#FFFAB7",
+                        backgroundColor: handleBg(
+                          user.previous_question || "0"
+                        ),
                       }}
                     >
-                      <option value="Yes">Yes</option>
-                      <option value="No">No</option>
+                      <option value="0">Not Approach</option>
+                      <option value="1">Successful</option>
+                      <option value="2">User Denied</option>
+                      <option value="3">Waiting</option>
                     </select>
                   </td>
                   <td>
@@ -294,6 +310,8 @@ export const Dashboard = () => {
                       {/* <label htmlFor="floatingTextarea">Comments</label> */}
                     </div>
                   </td>
+                  <td>{removeTime(user.updated_at)}</td>
+
                   <td>
                     <button
                       type="button"
