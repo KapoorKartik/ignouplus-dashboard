@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function FilterForm({ onFilter }) {
+function FilterForm({ onFilter, filterData, setFilterData }) {
   const [filterValues, setFilterValues] = useState({
     previous_question: "",
     books: "",
@@ -9,7 +9,7 @@ function FilterForm({ onFilter }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFilterValues((prevValues) => ({
+    setFilterData((prevValues) => ({
       ...prevValues,
       [name]: value,
     }));
@@ -17,12 +17,12 @@ function FilterForm({ onFilter }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onFilter(filterValues);
+    onFilter(filterData);
   };
 
   return (
     <>
-      <form className="d-flex">
+      <form className="d-flex ms-2">
         <div className="mb-3">
           <label
             htmlFor="assigment"
@@ -34,7 +34,7 @@ function FilterForm({ onFilter }) {
             className="form-select"
             id="assigment"
             name="assigment"
-            value={filterValues.assigment}
+            value={filterData.assigment}
             onChange={handleChange}
           >
             <option value="">Select...</option>
@@ -57,7 +57,7 @@ function FilterForm({ onFilter }) {
             className="form-select"
             id="books"
             name="books"
-            value={filterValues.books}
+            value={filterData.books}
             onChange={handleChange}
           >
             <option value="">Select...</option>
@@ -79,7 +79,7 @@ function FilterForm({ onFilter }) {
             className="form-select"
             id="previous_question"
             name="previous_question"
-            value={filterValues.previous_question}
+            value={filterData.previous_question}
             onChange={handleChange}
           >
             <option value="">Select...</option>
@@ -91,11 +91,12 @@ function FilterForm({ onFilter }) {
           </select>
         </div>
       </form>
-      <button onClick={handleSubmit} className="btn btn-primary mb-4">
+      <button onClick={handleSubmit} className="btn btn-primary mb-4 ms-2">
         Apply Filter
       </button>
     </>
   );
 }
+
 
 export default FilterForm;

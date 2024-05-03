@@ -21,7 +21,6 @@ export const Dashboard = () => {
     prevPage,
     jumpToPage,
     changeTotalPages,
-    fetchData,
     setData,
   } = usePagination();
 
@@ -29,6 +28,13 @@ export const Dashboard = () => {
     //  setIsLoading(false);
     setUserArr(dataFromHook);
   }, [dataFromHook]);
+
+   useEffect(() => {
+     //  setIsLoading(false);
+    //  setUserArr(dataFromHook);
+    console.log('page is changed:', currentPage)
+    handleLoading(fetchData);
+   }, [currentPage]);
 
   const getAllData = () => {
     setIsLoading(true);
@@ -115,8 +121,13 @@ export const Dashboard = () => {
 
   const handleReset = () => {
     // setPageNumber(1);
+    setFilterData({
+      previous_question: "",
+      books: "",
+      assigment: "",
+    });
     setmobileNumber("");
-    fetchData();
+    fetchData("reset");
     // getAllData();
   };
   const handleWhatsappOpen = (mob) => {
@@ -128,11 +139,8 @@ export const Dashboard = () => {
   };
 
   const handlePageChange = (e) => {
-    console.log("e:", e.target);
     e.preventDefault();
-    // Update the current page to the value entered by the user
-    // Ensure the page number is within valid range (between 1 and totalPages)
-    // let pageNumber = e.target.value;
+   
     let jumpTo = Math.min(Math.max(pageNumber, 1), totalPages);
     console.log("jumpTo:", jumpTo);
     jumpToPage(jumpTo);
@@ -164,13 +172,42 @@ export const Dashboard = () => {
     );
     console.log("data on filter:", data);
     setFilterData(data);
-    const postData = { ...data, action: "filterData" };
+    fetchData();
+    // const postData = { ...data, action: "filterData" };
+    // axios.post(`${url}`, JSON.stringify(postData)).then((res) => {
+    //   console.log("res on filter:", res.data);
+    //   setData(res.data.data);
+    //   changeTotalPages(res.data.totalPages);
+    // });
+  };
+
+  const fetchData = async (flag = "") => {
+    console.log('new fetch data')
+    let postData = {
+      filterData,
+      action: "getAllData",
+      page: currentPage,
+    };
+    if (flag === "reset"){
+      console.log('wow')
+      postData = {
+        filterData : {},
+        action: "getAllData",
+        page: currentPage,
+      };
+
+    }else {
+      console.log('no flag')
+    }
+    console.log('postData:', postData)
     axios.post(`${url}`, JSON.stringify(postData)).then((res) => {
       console.log("res on filter:", res.data);
       setData(res.data.data);
       changeTotalPages(res.data.totalPages);
+      console.log('res.data.totalPages:', res.data.totalPages)
     });
   };
+
   return (
     <>
       <div className="border w-98">
@@ -181,8 +218,15 @@ export const Dashboard = () => {
             </div>
           </div>
         )}
-        <h2>Success App Dashboard</h2>
-        <FilterForm onFilter={onFilter} />
+        <div class="container text-center">
+          <h1 class="fw-bold mt-4">Success App Dashboard</h1>
+        </div>
+
+        <FilterForm
+          onFilter={onFilter}
+          filterData={filterData}
+          setFilterData={setFilterData}
+        />
         <div className="w-20 d-flex justify-content-start">
           <input
             type="text"
@@ -224,6 +268,14 @@ export const Dashboard = () => {
             </tr>
           </thead>
           <tbody>
+            {userArr?.length === 0 ? (
+              <tr>
+                <td colSpan={"12"} className="text-center">
+                  Opps!! No Data Found
+                </td>
+              </tr>
+            ) : null}
+
             {userArr?.map((user, i) => {
               return (
                 <tr key={i} className="text-center">
@@ -332,10 +384,10 @@ export const Dashboard = () => {
             <form onSubmit={handlePageChange}>
               <input
                 type="number"
-                value={pageNumber}
                 onChange={(e) => setPageNumber(parseInt(e.target.value))}
                 min={1}
                 max={totalPages}
+                value={currentPage}
               />
               {/* <button className="info">Go</button> */}
               <button
@@ -352,7 +404,7 @@ export const Dashboard = () => {
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => handleLoading(prevPage)}
+                onClick={prevPage}
                 disabled={currentPage === 1}
               >
                 Previous
@@ -363,7 +415,7 @@ export const Dashboard = () => {
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => handleLoading(nextPage)}
+                onClick={nextPage}
                 disabled={currentPage === totalPages}
               >
                 Next

@@ -1,27 +1,26 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { url } from "../constant";
-
+// import fetchData from "../components/Dashboard";
 const usePagination = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [dataFromHook, setData] = useState([]);
 
-  useEffect(() => {
+  // useEffect(() => {
   
-    fetchData();
-  }, [currentPage]);
-  const fetchData = async () => {
-    try {
-      const response = await axios.get(
-        `${url}?page=${currentPage}`
-      );
-      setData(response.data.data);
-      setTotalPages(response.data.totalPages);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
+  //   fetchData();
+  // }, [currentPage]);
+
+  // const fetchData = async (filterData) => {
+  //   try {
+  //     const response = await axios.get(`${url}?page=${currentPage}`);
+  //     setData(response.data.data);
+  //     setTotalPages(response.data.totalPages);
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error);
+  //   }
+  // };
 
   const nextPage = () => {
     if (currentPage < totalPages) {
@@ -36,8 +35,9 @@ const usePagination = () => {
   };
 
   const jumpToPage = (val) =>{
-    if (currentPage > 0 && currentPage < totalPages) {
-      setCurrentPage(Number(val));
+    if (val > 0 && val <= totalPages) {
+      console.log('bla bla bla')
+      setCurrentPage(val);
     }
   }
 
@@ -54,7 +54,7 @@ const usePagination = () => {
     prevPage,
     jumpToPage,
     changeTotalPages,
-    fetchData,
+    // fetchData,
     setData,
   };
 };
