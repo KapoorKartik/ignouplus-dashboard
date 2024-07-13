@@ -37,17 +37,17 @@ export const Dashboard = () => {
    }, [currentPage]);
 
   const getAllData = () => {
-    setIsLoading(true);
-    fetchData();
-    setIsLoading(false);
+    // setIsLoading(true);
+    handleLoading(fetchData);
+    // setIsLoading(false);
   };
 
   const handleLoading = (fxn) => {
     setIsLoading(true);
+    fxn();
     setTimeout(() => {
-      fxn();
       setIsLoading(false);
-    }, 200);
+    }, 500);
     // no need of this timeout jsut for testing
   };
 
@@ -130,11 +130,10 @@ export const Dashboard = () => {
     fetchData("reset");
     // getAllData();
   };
-  const handleWhatsappOpen = (mob) => {
-    const message = "Hello, this is a predefined message."; // Replace with your predefined message
-    const url = `https://wa.me/${7018096573}?text=${encodeURIComponent(
-      message
-    )}`;
+  const handleWhatsappOpen = (user) => {
+    const message = `Hello, ${user.name} greetings form IGNOU Plus.`; // Replace with your predefined message
+  
+    const url = `https://wa.me/91${user.number}?text=${encodeURIComponent(message)}`;
     window.open(url);
   };
 
@@ -268,7 +267,7 @@ export const Dashboard = () => {
             </tr>
           </thead>
           <tbody>
-            {userArr?.length === 0 ? (
+            {userArr?.length === 0 && !isLoading ? (
               <tr>
                 <td colSpan={"12"} className="text-center">
                   Opps!! No Data Found
@@ -280,21 +279,21 @@ export const Dashboard = () => {
               return (
                 <tr key={i} className="text-center">
                   <td>{i + 1}</td>
-                  <td>{user.user_name}</td>
+                  <td>{user.name}</td>
                   <td>
-                    {user.user_number}
+                    {user.number}
 
                     <a
                       href="#"
                       class="link-secondary ms-2"
-                      onClick={(user) => handleWhatsappOpen(user?.user_number)}
+                      onClick={() => handleWhatsappOpen(user)}
                     >
                       <img src="/whatsapp.svg" alt="whatsapp" width={"25px"} />
                     </a>
                   </td>
-                  <td>{user.user_regional_center}</td>
-                  <td>{user.user_course}</td>
-                  <td>{user.user_semester}</td>
+                  <td>{user.rc}</td>
+                  <td>{user.course}</td>
+                  <td>{user.semester}</td>
                   <td>
                     {/* Dropdown */}
                     <select
@@ -384,11 +383,14 @@ export const Dashboard = () => {
             <form onSubmit={handlePageChange}>
               <input
                 type="number"
-                onChange={(e) => setPageNumber(parseInt(e.target.value))}
+                onChange={(e) => {
+                  setPageNumber(parseInt(e.target.value))}
+                }
                 min={1}
                 max={totalPages}
-                value={currentPage}
-              />
+                value={pageNumber}
+                />
+                
               {/* <button className="info">Go</button> */}
               <button
                 type="button"

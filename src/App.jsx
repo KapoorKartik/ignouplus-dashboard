@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Dashboard } from "./components/Dashboard";
 
 function App() {
-  if (import.meta.env.MODE !== "import.meta.env.MODE"){
+  if (import.meta.env.MODE !== "development"){
     console.log = console.error = console.warn = () => {};
   }
 

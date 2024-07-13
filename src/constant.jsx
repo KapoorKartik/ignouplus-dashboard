@@ -1,1 +1,1 @@
-export const url = "http://localhost/ignouplus-backend/kartik.php/";
+export const url = "https://api.ignouplus.com/dashboard.php/";
